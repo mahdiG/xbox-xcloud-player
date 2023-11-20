@@ -12,6 +12,7 @@ import EventBus from './Helper/EventBus'
 import GamepadDriver from './Driver/Gamepad'
 import KeyboardDriver from './Driver/Keyboard'
 
+
 interface xCloudPlayerConfig {
     ui_systemui?:Array<number>; // Default: [10,19,31,27,32,33]
     ui_version?:Array<number>; // Default: [0,1,0]
@@ -331,6 +332,8 @@ export default class xCloudPlayer {
     _maxVideoBitrate = 0
     _maxAudioBitrate = 0
 
+    imageCapture: any
+
     constructor(elementId:string, config:xCloudPlayerConfig = {}) {
         console.log('xCloudPlayer loaded!')
 
@@ -363,6 +366,22 @@ export default class xCloudPlayer {
             if(event.track.kind === 'video'){
                 this._videoComponent = new VideoComponent(this)
                 this._videoComponent.create(event.streams[0])
+
+                console.log("got video stream: ", event.streams[0]);
+
+                const videoTrack = event.streams[0].getVideoTracks()[0];
+                this.imageCapture = new ImageCapture(videoTrack);
+                
+
+                // setInterval(async () => {
+                //     const imageBitmap = await this.imageCapture.grabFrame();
+                //     console.log("IMAGE BITMAP: ", imageBitmap);
+                    
+                //     // const canvas = document.querySelector('#canvas');
+                //     // drawCanvas(canvas, imageBitmap);
+                // }, 1000);
+                
+                
 
             } else if(event.track.kind === 'audio'){
                 this._audioComponent = new AudioComponent(this)

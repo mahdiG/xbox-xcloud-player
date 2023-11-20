@@ -2,9 +2,40 @@ import 'dotenv/config'
 import express from 'express'
 import bodyParser from 'body-parser'
 import proxy from 'express-http-proxy'
+import puppeteer from 'puppeteer'
+import { WebSocketServer } from 'ws'
+
+import EventEmitter from 'node:events'
+import { writeFile, writeFileSync } from 'node:fs'
+
+class MyEmitter extends EventEmitter {}
+
+const myEmitter = new MyEmitter()
+
+
+const wsPort = process.env.WS_PORT || 3001
+const wsServer = new WebSocketServer({ port: wsPort })
+let ws
+
+wsServer.on('connection', (socket) => {
+    ws = socket
+    ws.on('error', console.error)
+
+    ws.on('message', (dataString) => {
+        const data = JSON.parse(dataString)
+        if (data.frame) {
+            myEmitter.emit('frame', data.frame)
+        }
+        console.log('received: %s', data)
+    })
+
+    ws.send('something')
+})
+
+
 
 const app = express()
-const port = 3000
+const port = process.env.HTTP_PORT || 3000
 
 app.use(bodyParser.json())
 
@@ -18,6 +49,45 @@ app.listen(port, () => {
 app.get(['/', '/sw.js', '/favicon.ico'], (req, res) => {
     res.send('Server running... <a href="stream.html">Open streaming interface</a>')
 })
+
+
+app.get('/test', (req, res) => {
+    res.send('puppetteeerr')
+
+    
+})
+
+app.get('/frame', (req, res) => {
+    ws.send('frame')
+    myEmitter.on('frame', async frame64 => {
+        console.log('got frame64: ', frame64)
+        // const blob = Buffer.from(frame64, "base64")
+        // const blob = atob(frame64)
+        // console.log("blob: ", blob);
+        // const buffer = Buffer.from(await blob.arrayBuffer())
+        
+        writeFile("out.bmp", frame64, 'base64', function(err) {
+            console.log(err);
+        });
+        res.send(frame64)
+    })
+})
+
+function getFrame(){
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            reject()
+        }, 5000)
+        
+        ws.send('frame')
+        myEmitter.on('frame', frame => {
+            console.log('got frame: ', frame)
+            resolve(frame)
+        })
+    })
+}
+
+
 
 app.use(proxy('uks.gssv-play-prodxhome.xboxlive.com', {
     https: true,
@@ -37,3 +107,40 @@ app.use(proxy('uks.gssv-play-prodxhome.xboxlive.com', {
         }
     },
 }))
+
+
+
+function startPuppeteer(){
+    (async () => {
+        const browser = await puppeteer.launch({
+            headless: 'new',
+        })
+        const page = await browser.newPage()
+        
+        page
+            .on('console', message =>
+                console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`))
+            .on('pageerror', (error => {
+                if (error) {
+                    console.log('error:, ', error)
+                }
+            }))
+            .on('response', response =>
+                console.log(`${response.status()} ${response.url()}`))
+            .on('requestfailed', request => {
+                if (request) {
+                    const failure = request.failure() 
+                    console.log(`${failure?.errorText} ${request.url()}`)
+                }
+            })
+
+        await page.goto(`http://localhost:${port}/stream.html`)
+        await new Promise(r => setTimeout(r, 20000));
+        console.log("taking screenshot");
+        await page.screenshot({ path: 'example.png' })
+    
+        // await browser.close()
+    })()
+}
+
+startPuppeteer()

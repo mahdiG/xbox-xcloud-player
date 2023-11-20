@@ -2,6 +2,7 @@ console.log('Starting xCloudPlayer...')
 
 var client;
 var apiClient;
+let ws
 
 var app = {
     startSession(type, serverId) {
@@ -162,9 +163,12 @@ var app = {
         button1.innerHTML = ''
         button3.onclick = undefined
     }
+
+    
 }
 
 window.addEventListener('load', (event) => {
+    connectToWS()
     // console.log(xCloudPlayer)
     client = new xCloudPlayer.default('videoHolder', {
         ui_systemui: [],
@@ -177,10 +181,15 @@ window.addEventListener('load', (event) => {
         var consoleDiv = document.getElementById('consolesList')
         var consolesHtml = '';
 
+        
         for(var device in consoles.results) {
             consolesHtml += consoles.results[device].deviceName+' ('+consoles.results[device].consoleType+') - '+consoles.results[device].serverId+' isSameNetwork:'+!consoles.results[device].outOfHomeWarning+' <button>'+consoles.results[device].powerState+'</button> <button onclick="app.startSession(\'xhome\', \''+consoles.results[device].serverId+'\')">Start session</button> <br />'
         }
         consoleDiv.innerHTML = consolesHtml
+
+        const serverId = consoles.results[0].serverId
+        app.startSession("xhome", serverId)
+
 
     }).catch((error) => {
         var consoleDiv = document.getElementById('consolesList')
@@ -199,3 +208,63 @@ window.addEventListener('load', (event) => {
     })
 
 })
+
+async function connectToWS() {
+    console.log("connect to ws");
+    // ws = new WebSocket("ws://localhost:8000");
+    // ws = new WebSocket("ws://0.0.0.0:8080");
+    // const { host, hostname, port } = window.location;
+
+
+    // ws port is 3000 but in dev server, location port is 8000
+    // this is only for dev env purposes
+    // const isDev = port !== "3000";
+    // if (isDev) {
+    //     // wsUrl = `wss://${hostname}:3000`;
+    //     wsUrl = `ws://${hostname}:8080`;
+    // }
+
+    const wsUrl = `ws://localhost:3001`
+    ws = new WebSocket(wsUrl);
+
+    // ws.onopen = () => {
+    // };
+    console.log("ws:", ws);
+    // ws.onmessage = function (event) {
+    //   console.log("ws message:", event.data);
+    // };
+    ws.onmessage = async event => {
+        console.log("ws event: ", event);
+
+        switch (event.data) {
+            case "frame":
+                console.log("give frame");
+                console.log("client.imageCapture: ", client.imageCapture);
+                if (client.imageCapture) {
+                    const frame = await client.imageCapture.grabFrame()
+                    const base64Img = btoa(frame)
+                    // console.log("frame in js: ", frame);
+                    ws.send(JSON.stringify({
+                        frame: base64Img
+                    }))
+                }
+                break;
+
+            case "input":
+                console.log("set input");
+                break;
+        
+            default:
+                console.log("ws event is unhandled: ", event.data);
+                break;
+        }
+    }
+}
+
+function blobToBase64(blob) {
+    return new Promise((resolve, _) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  }
