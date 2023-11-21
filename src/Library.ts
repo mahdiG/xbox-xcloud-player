@@ -669,4 +669,8 @@ export default class xCloudPlayer {
         return this._eventBus
     }
 
+    setGamepadInput(input){
+        this.getChannelProcessor('input').setInput(input)
+    }
+
 }
