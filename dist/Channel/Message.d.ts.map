@@ -1,0 +1,1 @@
+{"version":3,"file":"Message.d.ts","sourceRoot":"","sources":["../../src/Channel/Message.ts"],"names":[],"mappings":"AAAA,OAAO,WAAW,MAAM,QAAQ,CAAA;AAEhC,MAAM,CAAC,OAAO,OAAO,cAAe,SAAQ,WAAW;IAEnD,MAAM,CAAC,KAAK,KAAA;IAaZ,SAAS,CAAC,KAAK,KAAA;IAiEf,OAAO,CAAC,KAAK,KAAA;IAKb,eAAe,CAAC,IAAI,KAAA,EAAE,IAAI,KAAA;;;;;;;IAU1B,eAAe,CAAC,EAAE,KAAA,EAAE,IAAI,KAAA;CAW3B"}
