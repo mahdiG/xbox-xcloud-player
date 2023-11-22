@@ -408,6 +408,9 @@ class InputChannel extends Base_1.default {
             this._client._inputDriver.pressButton(index, button);
         }
     }
+    setInput(input) {
+        this._client._inputDriver.setInput(input);
+    }
     destroy() {
         this._metadataFps.stop();
         this._inputFps.stop();

@@ -105,6 +105,7 @@ export default class InputChannel extends BaseChannel {
     normalizeTriggerValue(e: any): number;
     normalizeAxisValue(e: any): number;
     pressButton(index: number, button: string): void;
+    setInput(input: any): void;
     destroy(): void;
     addProcessedFrame(frame: any): void;
     getMetadataQueue(size?: number): any[];

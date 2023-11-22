@@ -568,6 +568,7 @@ class xCloudPlayer {
         return this._eventBus;
     }
     setGamepadInput(input) {
+        // setInput is in input.ts (input channel) and calls the setInput of gamepad driver
         this.getChannelProcessor('input').setInput(input);
     }
 }
