@@ -543,6 +543,10 @@ export default class InputChannel extends BaseChannel {
         }
     }
 
+    setInput(input) {
+        this._client._inputDriver.setInput(input)
+    }
+
     destroy() {
         this._metadataFps.stop()
         this._inputFps.stop()
