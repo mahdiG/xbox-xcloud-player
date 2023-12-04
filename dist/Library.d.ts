@@ -67,6 +67,7 @@ export default class xCloudPlayer {
     _codecPreference: string;
     _maxVideoBitrate: number;
     _maxAudioBitrate: number;
+    imageCapture: any;
     constructor(elementId: string, config?: xCloudPlayerConfig);
     createOffer(): Promise<unknown>;
     _sdpHandler: any;

@@ -306,6 +306,9 @@ class xCloudPlayer {
             if (event.track.kind === 'video') {
                 this._videoComponent = new Video_1.default(this);
                 this._videoComponent.create(event.streams[0]);
+                console.log("got video stream: ", event.streams[0]);
+                const videoTrack = event.streams[0].getVideoTracks()[0];
+                this.imageCapture = new ImageCapture(videoTrack);
             }
             else if (event.track.kind === 'audio') {
                 this._audioComponent = new Audio_1.default(this);
