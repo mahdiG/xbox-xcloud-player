@@ -274,7 +274,7 @@ async function connectToWS() {
     //     wsUrl = `ws://${hostname}:8080`;
     // }
 
-    const wsUrl = `ws://localhost:3001`
+    const wsUrl = `ws://localhost:3004`
     ws = new WebSocket(wsUrl);
 
     // ws.onopen = () => {
@@ -283,6 +283,9 @@ async function connectToWS() {
     // ws.onmessage = function (event) {
     //   console.log("ws message:", event.data);
     // };
+
+    const canvas = document.querySelector('#canvas');
+
     ws.onmessage = async event => {
         console.log("ws event: ", event);
 
@@ -290,9 +293,13 @@ async function connectToWS() {
             case "frame":
                 console.log("give frame");
                 console.log("client.imageCapture: ", client.imageCapture);
+
+
+
+                
                 if (client.imageCapture) {
                     const frame = await client.imageCapture.grabFrame()
-                    const base64Img = btoa(frame)
+                    const base64Img = drawCanvas(canvas, frame)
                     // console.log("frame in js: ", frame);
                     ws.send(JSON.stringify({
                         frame: base64Img
@@ -313,8 +320,35 @@ async function connectToWS() {
 
 function blobToBase64(blob) {
     return new Promise((resolve, _) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(blob);
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
     });
+}
+
+function drawCanvas(canvas, img) {
+    canvas.width = getComputedStyle(canvas).width.split('px')[0];
+    canvas.height = getComputedStyle(canvas).height.split('px')[0];
+    const ratio = Math.min(canvas.width / img.width, canvas.height / img.height);
+    const x = (canvas.width - img.width * ratio) / 2;
+    const y = (canvas.height - img.height * ratio) / 2;
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    canvas
+        .getContext('2d')
+        .drawImage(
+            img,
+            0,
+            0,
+            img.width,
+            img.height,
+            x,
+            y,
+            img.width * ratio,
+            img.height * ratio,
+        );
+  
+    const dataURL = canvas.toDataURL('image/jpeg', 0.5);
+    console.log("dataUrl: ", dataURL);
+    
+    return dataURL.replace(/^data:image\/?[A-z]*;base64,/, "");
   }

@@ -6,7 +6,6 @@ import puppeteer from 'puppeteer'
 import { WebSocketServer } from 'ws'
 
 import EventEmitter from 'node:events'
-import { writeFile, writeFileSync } from 'node:fs'
 
 class MyEmitter extends EventEmitter {}
 
@@ -60,33 +59,18 @@ app.get('/test', (req, res) => {
 app.get('/frame', (req, res) => {
     ws.send('frame')
     myEmitter.on('frame', async frame64 => {
-        console.log('got frame64: ', frame64)
+        // console.log('got frame64: ', frame64)
         // const blob = Buffer.from(frame64, "base64")
         // const blob = atob(frame64)
         // console.log("blob: ", blob);
         // const buffer = Buffer.from(await blob.arrayBuffer())
         
-        writeFile("out.bmp", frame64, 'base64', function(err) {
-            console.log(err);
-        });
+        // writeFile("out.bmp", frame64, 'base64', function(err) {
+        //     console.log(err);
+        // });
         res.send(frame64)
     })
 })
-
-function getFrame(){
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            reject()
-        }, 5000)
-        
-        ws.send('frame')
-        myEmitter.on('frame', frame => {
-            console.log('got frame: ', frame)
-            resolve(frame)
-        })
-    })
-}
-
 
 
 app.use(proxy('uks.gssv-play-prodxhome.xboxlive.com', {
@@ -116,6 +100,11 @@ function startPuppeteer(){
             headless: 'new',
         })
         const page = await browser.newPage()
+        await page.setViewport({
+            width: 1920,
+            height: 1080,
+            deviceScaleFactor: 1,
+        });
         
         page
             .on('console', message =>
@@ -135,9 +124,6 @@ function startPuppeteer(){
             })
 
         await page.goto(`http://localhost:${port}/stream.html`)
-        await new Promise(r => setTimeout(r, 20000));
-        console.log("taking screenshot");
-        await page.screenshot({ path: 'example.png' })
     
         // await browser.close()
     })()

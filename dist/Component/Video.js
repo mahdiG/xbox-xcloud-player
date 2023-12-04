@@ -19,6 +19,7 @@ class VideoComponent {
             videoRender.width = videoHolder.clientWidth;
             videoRender.height = videoHolder.clientHeight;
             videoRender.style.touchAction = 'none';
+            videoRender.muted = true;
             // videoRender.muted = true
             videoRender.autoplay = true;
             videoRender.setAttribute('playsinline', 'playsinline');
