@@ -60,6 +60,11 @@ export default class GamepadDriver {
         }, 60)
     }
 
+    setInput(input){
+        this._shadowGamepad[0] = input
+        this._application?.getChannelProcessor('input').queueGamepadState(this._shadowGamepad[0])
+    }
+
     run(){
         this._application?.getChannelProcessor('input').queueGamepadState(this.requestState())
 
